@@ -190,3 +190,19 @@ d <- data_spl[[3]]
 ks.test(ph_5min_1, ph_5min_2, alternative ="greater") 
 wilcox.test(ph_5min_1, ph_5min_2) 
 
+
+## ANOVA de dos factores
+setwd("C:/Users/aperez/Desktop/proyecto-ph-salival")
+list.files()
+## informacion utilizada en el analisis
+data <- read.table ("data_ph.txt", header=TRUE, sep="\t", dec=",")
+data <- data[,1:12]
+summary(data)
+
+## Sin interacción de factores
+dosf_anova <- aov(ph_5min ~ Grupo_Cap_Amort+Tipo_Vitamina, data = data)
+summary(dosf_anova)
+
+## Con interaccion de factores
+idosf_anova <- aov(ph_5min ~ Grupo_Cap_Amort*Tipo_Vitamina, data = data)
+summary(idosf_anova)
