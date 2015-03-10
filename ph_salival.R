@@ -1,12 +1,15 @@
 
 
+
+setwd("C:/Users/aperez/Desktop/proyecto-ph-salival")
+list.files()
 ## informacion utilizada en el analisis
 data <- read.table ("data_ph.txt", header=TRUE, sep="\t", dec=",")
 data <- data[,1:12]
 str(data)
+#View(data)
 
-
-# analisis en subgrupos control vs tratamiento (inicial y 5 min)
+# analisis en subgrupos control vs tratamiento (ph_inicial y ph_5min)
 
 source(file = "mult_ggplot2.R")
 
@@ -19,16 +22,20 @@ graf.subg <- function(d){
         ## diag densidad
         g1 <- ggplot(mdata, aes(x=value, fill=variable))+
                 geom_density(color="gray60",alpha=0.6) + 
-                labs(x="", y="",fill="Ph Salival") +
+                labs(x="", y="",fill=paste("Grupo", 
+                                  substring(mdata[1,"Subg_Cap_Amort"],1,1))) +
                 xlim(c(min(mdata$value)-1,max(mdata$value)+1))+
-                scale_fill_discrete(labels=c("Control","Tratamiento"))+
+                scale_fill_discrete(labels=c("Tratamiento","Control"))+
                 theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
                       axis.title.x=element_blank())
         ## diag cajas        
         g2 <- ggplot(mdata, aes(x=1, y=value, fill=variable))+
                 geom_boxplot(outlier.colour = "red",color="gray50",width=0.5)+
-                labs(y = "Ph Salival", x = "", fill="Ph Salival")+
-                scale_fill_discrete(labels=c("Control","Tratamiento"))+
+                labs(y = paste("Ph Salival, Subgrupo: ", mdata[1,"Subg_Cap_Amort"],
+                               " (", mdata[1, "Tipo_Vitamina"], ")", sep=""), 
+                     x = "", fill=paste("Grupo", 
+                                        substring(mdata[1,"Subg_Cap_Amort"],1,1)))+
+                scale_fill_discrete(labels=c("Tratamiento","Control"))+
                 ylim(c(min(mdata$value)-1,max(mdata$value)+1))+
                 theme(axis.text.y=element_blank(),axis.ticks.y=element_blank())+
                 coord_flip()
@@ -54,14 +61,19 @@ graf.grup <- function(d){
                 geom_density(color="gray60",alpha=0.6) + 
                 labs(x="", y="",fill="Vitamina C") +
                 xlim(c(min(mdata$ph_5min)-1,max(mdata$ph_5min)+1))+
-                scale_fill_discrete(labels=c("Efervescente","Masticable"))+
+                scale_fill_discrete(labels=c(paste(mdata[1,"Grupo_Cap_Amort"],
+                   "2 (Efervescente)", sep=""),paste(mdata[1,"Grupo_Cap_Amort"],
+                                                    "1 (Masticable)", sep="")))+
                 theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),
                       axis.title.x=element_blank())
         ## diag cajas        
         g2 <- ggplot(mdata, aes(x=1, y=ph_5min, fill=Subg_Cap_Amort))+
                 geom_boxplot(outlier.colour = "red",color="gray50",width=0.5)+
-                labs(y = "Ph Salival", x = "", fill="Vitamina C")+
-                scale_fill_discrete(labels=c("Efervescente","Masticable"))+
+                labs(y = paste("Ph Salival, Grupo:", mdata[1,"Grupo_Cap_Amort"]),
+                     x = "", fill="Vitamina C")+
+                scale_fill_discrete(labels=c(paste(mdata[1,"Grupo_Cap_Amort"],
+                   "2 (Efervescente)", sep=""),paste(mdata[1,"Grupo_Cap_Amort"],
+                                                   "1 (Masticable)", sep="")))+
                 ylim(c(min(mdata$ph_5min)-1,max(mdata$ph_5min)+1))+
                 theme(axis.text.y=element_blank(),axis.ticks.y=element_blank())+
                 coord_flip()
@@ -75,7 +87,7 @@ data_spl <- split(x = data, f=data[,"Grupo_Cap_Amort"])
 sapply(data_spl, graf.grup)
 
 
-## Analisis tratamientos por factor capacidad buffer (A,B,C) 
+## Analisis tratamientos por factor: capacidad buffer (A,B,C) 
 mdata <- data
 mdata[,"Subg_Cap_Amort"] <- factor(mdata[,"Subg_Cap_Amort"], 
                                 levels=c("A1","B1","C1","A2","B2","C2"))
@@ -97,6 +109,8 @@ g2 <- ggplot(mdata, aes(x=TRUE, y=ph_5min, fill=Tipo_Vitamina))+coord_flip()+
 ## multiples graficos ggplot2
 list_graf <- list(g1,g2)
 print(mult_ggplot(list_graf,1,2))
+
+
 
 
 
@@ -186,14 +200,15 @@ sapply(data_spl, dif.med.grup)
 
 ## grupo C muestra pequeña
 data_spl <- split(x = data, f=data[,"Grupo_Cap_Amort"])
-d <- data_spl[[3]]
-ks.test(ph_5min_1, ph_5min_2, alternative ="greater") 
+names(data_spl)
+data_spl[[3]]
+ks.test(ph_5min_1, ph_5min_2) 
 wilcox.test(ph_5min_1, ph_5min_2) 
-
+fix(ph_5min_1)
 
 ## ANOVA de dos factores
 setwd("C:/Users/aperez/Desktop/proyecto-ph-salival")
-list.files()
+list.files(,full.names=TRUE)
 ## informacion utilizada en el analisis
 data <- read.table ("data_ph.txt", header=TRUE, sep="\t", dec=",")
 data <- data[,1:12]
@@ -206,3 +221,5 @@ summary(dosf_anova)
 ## Con interaccion de factores
 idosf_anova <- aov(ph_5min ~ Grupo_Cap_Amort*Tipo_Vitamina, data = data)
 summary(idosf_anova)
+
+plot(idosf_anova) # diagnostic plots
