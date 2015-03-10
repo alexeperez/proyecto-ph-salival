@@ -98,3 +98,95 @@ g2 <- ggplot(mdata, aes(x=TRUE, y=ph_5min, fill=Tipo_Vitamina))+coord_flip()+
 list_graf <- list(g1,g2)
 print(mult_ggplot(list_graf,1,2))
 
+
+
+## Pruebas de Hipotesis para la diferencia de medias
+
+## Subgrupos Control (ph_inicial) y Vit C masticable (ph_5min)
+setwd("C:/Users/aperez/Desktop/proyecto-ph-salival")
+list.files()
+## informacion utilizada en el análisis
+data <- read.table ("data_ph.txt", header=TRUE, sep="\t", dec=",")
+data <- data[,1:12]
+str(data)
+
+data_spl <- split(x = data, f=data[,"Subg_Cap_Amort"])
+d <- data_spl [[1]]
+assign(paste(ph_inicial, d[1,"Subg_Cap_Amort"], sep="_"))
+
+ph_inicial <- paste("ph_inicial", d[1,"Subg_Cap_Amort"], sep="_")
+assign(ph_inicial, d[,"ph_inicial"])
+
+
+dif.med.subg <- function(d){
+        
+        ## Prueba var iguales
+        ph_inicial <- d[,"ph_inicial"]
+        ph_5min <- d[,"ph_5min"]
+        ig.var <- var.test(ph_inicial, ph_5min)
+        
+        print(paste("ph_inicial y ph_5min en Subgrupo:", 
+                    d[1,"Subg_Cap_Amort"], sep=" "))
+        print(ig.var)
+        ## Rechazo var iguales
+        var.igual <- TRUE
+        if(ig.var$p.value<0.05) var.igual <- FALSE 
+        ## Prueba medias muestras pequeñas, pareadas, var iguales o distintas
+        ## desv estand poblacional desconocida
+        dif.med <- t.test(ph_inicial, ph_5min, alternative="greater",
+                             paired=TRUE, var.equal=var.igual, conf.level=0.95)
+        
+        print(paste("ph_inicial y ph_5min en Subgrupo:", 
+                    d[1,"Subg_Cap_Amort"], sep=" "))
+        print(dif.med)
+}
+
+data_spl <- split(x = data, f=data[,"Subg_Cap_Amort"])
+sapply(data_spl, dif.med.subg)
+
+
+
+## Comparacion (ph_5min) en Subgrupos Tratamiento: 
+## Vit C masticable y Vit C Efervescente
+setwd("C:/Users/aperez/Desktop/proyecto-ph-salival")
+list.files()
+## informacion utilizada en el análisis
+data <- read.table ("data_ph.txt", header=TRUE, sep="\t", dec=",")
+data <- data[,1:12]
+str(data)
+
+data_spl <- split(x = data, f=data[,"Grupo_Cap_Amort"])
+d <- data_spl[[3]]
+
+dif.med.grup <- function(d){
+        ## Prueba var iguales
+        tabl <- table(d[, "Subg_Cap_Amort"])
+        g <- names(tabl)[which(tabl>0)]
+        
+        ph_5min_1 <- d[d[, "Subg_Cap_Amort"]==g[1], "ph_5min"]
+        ph_5min_2 <- d[d[, "Subg_Cap_Amort"]==g[2], "ph_5min"]
+        ig.var <- var.test(ph_5min_1, ph_5min_2)
+        
+        print(paste("ph_5min en Subgrupos:", g[1],"y", g[2], sep=" "))
+        print(ig.var)
+        ## Rechazo var iguales
+        var.igual <- TRUE
+        if(ig.var$p.value<0.05) var.igual <- FALSE 
+        ## Prueba medias muestras pequeñas, pareadas, var iguales o distintas
+        ## desv estand poblacional desconocida
+        dif.med <- t.test(ph_5min_1, ph_5min_2, alternative="greater",
+                          paired=FALSE, var.equal=var.igual, conf.level=0.95)
+        
+        print(paste("ph_5min en Subgrupos:", g[1],"y", g[2], sep=" "))
+        print(dif.med)
+}
+
+data_spl <- split(x = data, f=data[,"Grupo_Cap_Amort"])
+sapply(data_spl, dif.med.grup)
+
+## grupo C muestra pequeña
+data_spl <- split(x = data, f=data[,"Grupo_Cap_Amort"])
+d <- data_spl[[3]]
+ks.test(ph_5min_1, ph_5min_2, alternative ="greater") 
+wilcox.test(ph_5min_1, ph_5min_2) 
+
