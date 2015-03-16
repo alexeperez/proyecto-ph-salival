@@ -1,5 +1,42 @@
+## Distribución de la Población
+
+setwd("C:/Users/aperez/Desktop/proyecto-ph-salival")
+list.files()
+## informacion utilizada en el analisis
+data <- read.table ("data_ph.txt", header=TRUE, sep="\t", dec=",")
+data <- data[,1:12]
+str(data)
+#View(data)
+
+library(ggplot2)
+g1 <- ggplot(data, aes(x=Genero, fill=Genero))+
+        geom_bar(outlier.colour = "red",color="gray50",width=0.5)+
+        labs(y = "Frecuencia", x = "Género")
+print(g1)
+g2 <- ggplot(data, aes(x=Grupo_Cap_Amort, fill=Grupo_Cap_Amort))+
+        geom_bar(outlier.colour = "red",color="gray50",width=0.5)+
+        labs(y = "Frecuencia", x = "Capacidad Buffer", fill="Grupo")+
+        scale_fill_manual(values = c("green1", "khaki1", "orangered"))
+print(g2)
 
 
+pos1 <- with(data,table(Subg_Cap_Amort)/2)
+pos2 <- with(data,table(Subg_Cap_Amort)/2)
+ pos()
+g3 <- ggplot(data, aes(x=Grupo_Cap_Amort, fill=Subg_Cap_Amort))+
+        geom_bar(outlier.colour = "red",color="gray50",width=0.5)+
+        labs(y = "Frecuencia", x = "Grupo", fill="Subgrupo")+
+        scale_fill_manual(values = c("lightcoral", "lightseagreen","lightcoral", "lightseagreen",
+                                     "lightcoral","lightseagreen"))+
+        theme(legend.position= "none")+
+        annotate("text", x=rep(c(1,2,3),2), y= c(8,4,2,24,12,6), 
+                 label=c("A1", "B1", "C1", "A2", "B2", "C2"), colour = "gray30")
+
+print(g3)
+
+
+
+## Comparación de tratamientos
 
 setwd("C:/Users/aperez/Desktop/proyecto-ph-salival")
 list.files()
